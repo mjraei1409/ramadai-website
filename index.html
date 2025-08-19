@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>چت بات پیشرفته</title>
+<title>ramadai chatbot</title>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap');
@@ -56,7 +56,7 @@ body{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:white;min-
 <div id="app">
   <div class="background-animation" id="background"></div>
 
-  <div v-if="!isLoggedIn" class="auth-container">
+  <!-- <div v-if="!isLoggedIn" class="auth-container">
     <div class="auth-box">
       <h2>{{ isLogin ? 'ورود به حساب' : 'ایجاد حساب' }}</h2>
       <form @submit.prevent="handleSubmit">
@@ -74,11 +74,11 @@ body{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:white;min-
         </button>
       </form>
     </div>
-  </div>
+  </div> -->
 
   <div v-else class="chat-container">
     <div class="header">
-      <div class="logo">چت بات پیشرفته</div>
+      <div class="logo">ramadai chatbot | هوش مصنوعی رامد</div>
       <div class="user-info">
         <div class="user-avatar">{{ userInitials }}</div>
         <button class="logout-btn" @click="logout">خروج</button>
