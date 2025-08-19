@@ -149,29 +149,29 @@ const app = createApp({
 
     const toggleAuthMode = () => { isLogin.value = !isLogin.value; };
 
-    const handleSubmit = () => {
-      if(authForm.value.email && authForm.value.password){
-        isLoggedIn.value=true;
-        user.value = { email: authForm.value.email, name: authForm.value.email.split('@')[0] };
+    // const handleSubmit = () => {
+    //   if(authForm.value.email && authForm.value.password){
+    //     isLoggedIn.value=true;
+    //     user.value = { email: authForm.value.email, name: authForm.value.email.split('@')[0] };
 
-        // بارگذاری پیام خوش آمد
-        messages.value = [
-          { text:'سلام! خوش آمدید به چت بات پیشرفته ما. چطور می‌تونم کمکتون کنم؟', sender:'bot' }
-        ];
-        // ذخیره پیام‌ها در LocalStorage
-        localStorage.setItem('chatMessages', JSON.stringify(messages.value));
+    //     // بارگذاری پیام خوش آمد
+    //     messages.value = [
+    //       { text:'سلام! خوش آمدید به چت بات پیشرفته ما. چطور می‌تونم کمکتون کنم؟', sender:'bot' }
+    //     ];
+    //     // ذخیره پیام‌ها در LocalStorage
+    //     localStorage.setItem('chatMessages', JSON.stringify(messages.value));
 
-        scrollToBottom();
-      }
-    };
+    //     scrollToBottom();
+    //   }
+    // };
 
-    const logout = () => {
-      isLoggedIn.value=false;
-      user.value=null;
-      messages.value=[];
-      authForm.value={ email:'', password:'', chatid:Math.floor(Math.random()*100000) };
-      localStorage.removeItem('chatMessages');
-    };
+    // const logout = () => {
+    //   isLoggedIn.value=false;
+    //   user.value=null;
+    //   messages.value=[];
+    //   authForm.value={ email:'', password:'', chatid:Math.floor(Math.random()*100000) };
+    //   localStorage.removeItem('chatMessages');
+    // };
 
     const sendMessage = async () => {
       if(!newMessage.value.trim()) return;
