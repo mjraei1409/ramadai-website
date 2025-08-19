@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>چت بات پیشرفته</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif;}
+body{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:white;min-height:100vh;overflow:hidden;}
+#app{height:100vh;display:flex;flex-direction:column;}
+.background-animation{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden;}
+.floating-element{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(0,219,222,0.2) 0%,transparent 70%);animation:float 15s infinite linear;}
+@keyframes float{0%{transform:translate(0,0) rotate(0deg);opacity:0}10%{opacity:.5}90%{opacity:.5}100%{transform:translate(100px,-100vh) rotate(360deg);opacity:0}}
+.smoke{position:absolute;width:100px;height:100px;background:radial-gradient(circle,rgba(128,0,128,0.1) 0%,transparent 70%);border-radius:50%;animation:smoke 20s infinite linear;filter:blur(20px);}
+@keyframes smoke{0%{transform:translate(0,0) scale(0.5);opacity:0}10%{opacity:.3}90%{opacity:.1}100%{transform:translate(50px,-50vh) scale(2);opacity:0}}
+.auth-container{display:flex;justify-content:center;align-items:center;height:100vh;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);}
+.auth-box{background:rgba(30,30,46,0.8);border-radius:20px;padding:2rem;width:100%;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(10px);}
+.auth-box h2{text-align:center;margin-bottom:1.5rem;font-weight:700;background:linear-gradient(45deg,#00dbde,#fc00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.form-group{margin-bottom:1rem;}
+.form-group label{display:block;margin-bottom:.5rem;font-weight:500;}
+.form-group input{width:100%;padding:.8rem;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(20,20,36,0.7);color:white;font-size:1rem;}
+.form-group input:focus{outline:none;border-color:#00dbde;}
+.btn{width:100%;padding:.8rem;border-radius:10px;border:none;font-size:1rem;font-weight:500;cursor:pointer;transition:all .3s ease;}
+.btn-primary{background:linear-gradient(45deg,#00dbde,#fc00ff);color:white;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,219,222,0.4);}
+.btn-secondary{background:rgba(255,255,255,0.1);color:white;margin-top:.5rem;}
+.btn-secondary:hover{background:rgba(255,255,255,0.2);}
+.chat-container{display:flex;flex-direction:column;height:100vh;}
+.header{padding:1rem 2rem;background:rgba(30,30,46,0.8);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;}
+.logo{font-size:1.5rem;font-weight:700;background:linear-gradient(45deg,#00dbde,#fc00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.user-info{display:flex;align-items:center;gap:1rem;}
+.user-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(45deg,#00dbde,#fc00ff);display:flex;align-items:center;justify-content:center;font-weight:bold;}
+.logout-btn{background:rgba(255,100,100,0.2);border:none;color:#ff6b6b;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .3s ease;}
+.logout-btn:hover{background:rgba(255,100,100,0.3);}
+.messages-container{flex:1;padding:1rem;overflow-y:auto;display:flex;flex-direction:column;gap:1rem;}
+.message{max-width:80%;padding:1rem;border-radius:15px;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.user-message{background:linear-gradient(45deg,#00dbde,#0077ff);align-self:flex-end;border-bottom-right-radius:5px;}
+.bot-message{background:rgba(50,50,70,0.7);align-self:flex-start;border-bottom-left-radius:5px;}
+.input-container{padding:1rem;background:rgba(30,30,46,0.8);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.1);}
+.input-box{display:flex;gap:.5rem;}
+.message-input{flex:1;padding:1rem;border-radius:15px;border:1px solid rgba(255,255,255,0.2);background:rgba(20,20,36,0.7);color:white;font-size:1rem;}
+.message-input:focus{outline:none;border-color:#00dbde;}
+.send-btn{background:linear-gradient(45deg,#00dbde,#fc00ff);border:none;width:50px;border-radius:50%;cursor:pointer;transition:all .3s ease;}
+.send-btn:hover{transform:scale(1.05);}
+.typing-indicator{display:flex;align-items:center;gap:.5rem;padding:1rem;background:rgba(50,50,70,0.7);border-radius:15px;align-self:flex-start;margin-bottom:1rem;}
+.dot{width:8px;height:8px;background:#00dbde;border-radius:50%;animation:bounce 1.5s infinite;}
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="background-animation" id="background"></div>
+
+  <div v-if="!isLoggedIn" class="auth-container">
+    <div class="auth-box">
+      <h2>{{ isLogin ? 'ورود به حساب' : 'ایجاد حساب' }}</h2>
+      <form @submit.prevent="handleSubmit">
+        <div class="form-group">
+          <label for="email">ایمیل</label>
+          <input type="email" id="email" v-model="authForm.email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">رمز عبور</label>
+          <input type="password" id="password" v-model="authForm.password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">{{ isLogin ? 'ورود' : 'ثبت نام' }}</button>
+        <button type="button" class="btn btn-secondary" @click="toggleAuthMode">
+          {{ isLogin ? 'حساب ندارید؟ ثبت نام کنید' : 'حساب دارید؟ وارد شوید' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div v-else class="chat-container">
+    <div class="header">
+      <div class="logo">چت بات پیشرفته</div>
+      <div class="user-info">
+        <div class="user-avatar">{{ userInitials }}</div>
+        <button class="logout-btn" @click="logout">خروج</button>
+      </div>
+    </div>
+
+    <div class="messages-container" ref="messagesContainer">
+      <div v-for="(message, index) in messages" :key="index"
+           :class="['message', message.sender === 'user' ? 'user-message' : 'bot-message']">
+        {{ message.text }}
+      </div>
+      <div v-if="isTyping" class="typing-indicator">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <div class="input-container">
+      <div class="input-box">
+        <input type="text" class="message-input" v-model="newMessage"
+               @keyup.enter="sendMessage" placeholder="پیام خود را بنویسید...">
+        <button class="send-btn" @click="sendMessage">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, onMounted, nextTick, computed } = Vue;
+
+const app = createApp({
+  setup(){
+    const isLoggedIn = ref(false);
+    const isLogin = ref(true);
+    const authForm = ref({ email:'', password:'', chatid:Math.floor(Math.random()*100000) });
+    const newMessage = ref('');
+    const messages = ref([]);
+    const isTyping = ref(false);
+    const user = ref(null);
+    const messagesContainer = ref(null);
+
+    const createBackgroundElements = () => {
+      const background = document.getElementById('background');
+      for(let i=0;i<20;i++){
+        const el=document.createElement('div');
+        el.classList.add('floating-element');
+        el.style.width=`${20+Math.random()*80}px`;
+        el.style.height=el.style.width;
+        el.style.left=`${Math.random()*100}%`;
+        el.style.top=`${Math.random()*100}%`;
+        el.style.animationDuration=`${15+Math.random()*20}s`;
+        el.style.animationDelay=`${Math.random()*5}s`;
+        background.appendChild(el);
+      }
+      for(let i=0;i<15;i++){
+        const smoke=document.createElement('div');
+        smoke.classList.add('smoke');
+        smoke.style.width=`${50+Math.random()*100}px`;
+        smoke.style.height=smoke.style.width;
+        smoke.style.left=`${Math.random()*100}%`;
+        smoke.style.top=`${Math.random()*100}%`;
+        smoke.style.animationDuration=`${20+Math.random()*30}s`;
+        smoke.style.animationDelay=`${Math.random()*10}s`;
+        background.appendChild(smoke);
+      }
+    };
+
+    const toggleAuthMode = () => { isLogin.value = !isLogin.value; };
+
+    const handleSubmit = () => {
+      if(authForm.value.email && authForm.value.password){
+        isLoggedIn.value=true;
+        user.value = { email: authForm.value.email, name: authForm.value.email.split('@')[0] };
+
+        // بارگذاری پیام خوش آمد
+        messages.value = [
+          { text:'سلام! خوش آمدید به چت بات پیشرفته ما. چطور می‌تونم کمکتون کنم؟', sender:'bot' }
+        ];
+        // ذخیره پیام‌ها در LocalStorage
+        localStorage.setItem('chatMessages', JSON.stringify(messages.value));
+
+        scrollToBottom();
+      }
+    };
+
+    const logout = () => {
+      isLoggedIn.value=false;
+      user.value=null;
+      messages.value=[];
+      authForm.value={ email:'', password:'', chatid:Math.floor(Math.random()*100000) };
+      localStorage.removeItem('chatMessages');
+    };
+
+    const sendMessage = async () => {
+      if(!newMessage.value.trim()) return;
+      const msg = newMessage.value;
+
+      messages.value.push({ text:msg, sender:'user' });
+      localStorage.setItem('chatMessages', JSON.stringify(messages.value));
+
+      newMessage.value='';
+      isTyping.value=true;
+      scrollToBottom();
+
+      try{
+        const res = await fetch('http://localhost:8000/chat/', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({
+            username:user.value.name,
+            chatid:authForm.value.chatid,
+            message:msg
+          })
+        });
+        const data = await res.json();
+
+        let botText = '';
+        messages.value.push({ text: botText, sender:'bot' });
+        for(let i=0;i<data.text.length;i++){
+          botText += data.text[i];
+          messages.value[messages.value.length-1].text = botText;
+          scrollToBottom();
+          await new Promise(r => setTimeout(r, 25));
+        }
+        localStorage.setItem('chatMessages', JSON.stringify(messages.value));
+
+      }catch(err){
+        messages.value.push({ text:'ارتباط با سرور برقرار نشد.', sender:'bot' });
+        localStorage.setItem('chatMessages', JSON.stringify(messages.value));
+      }finally{
+        isTyping.value=false;
+        scrollToBottom();
+      }
+    };
+
+    const scrollToBottom = () => {
+      nextTick(()=>{ if(messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight; });
+    };
+
+    const userInitials = computed(()=>{
+      if(user.value && user.value.name) return user.value.name.charAt(0).toUpperCase();
+      return 'U';
+    });
+
+    onMounted(()=>{
+      createBackgroundElements();
+
+      // بارگذاری پیام‌ها از LocalStorage
+      const savedMessages = localStorage.getItem('chatMessages');
+      if(savedMessages) messages.value = JSON.parse(savedMessages);
+    });
+
+    return { isLoggedIn,isLogin,authForm,newMessage,messages,isTyping,user,messagesContainer,toggleAuthMode,handleSubmit,logout,sendMessage,userInitials };
+  }
+});
+
+app.mount('#app');
+</script>
+</body>
+</html>
